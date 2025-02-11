@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Component Guessing Game</title>
+    <style>
+        body {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            text-align: center;
+            background-color: #072857;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .hidden { display: none; }
+        h1, h2 {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: white;
+            color: #072857;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: white;
+        }
+        select {
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Computer Component Guessing Game</h1>
+    
+    <div id="gameModeSelection">
+        <h2>Select Game Mode</h2>
+        <button onclick="startGame(1)">1 Player</button>
+        <button onclick="startGame(3)">3 Players</button>
+    </div>
+    
+    <div id="componentSelection" class="hidden">
+        <h2>Pick 5 Components in Order</h2>
+        <select id="component1">
+            <option>CPU</option>
+            <option>GPU</option>
+            <option>RAM</option>
+            <option>SSD</option>
+            <option>Motherboard</option>
+        </select>
+        <select id="component2"></select>
+        <select id="component3"></select>
+        <select id="component4"></select>
+        <select id="component5"></select>
+        <button onclick="confirmOrder()">Confirm Order</button>
+    </div>
+    
+    <div id="guessSection" class="hidden">
+        <h2>Make Your Guess</h2>
+        <p id="roundCounter">Round: 1</p>
+        <select id="guess1"></select>
+        <select id="guess2"></select>
+        <select id="guess3"></select>
+        <select id="guess4"></select>
+        <select id="guess5"></select>
+        <button onclick="submitGuess()">Submit Guess</button>
+        <p id="result"></p>
+        <p id="feedback"></p>
+    </div>
+    
+    <script>
+        let correctOrder = [];
+        let attempts = 0;
+        let maxAttempts;
+        let currentPlayer = 1;
+        let numPlayers;
+        
+        function startGame(players) {
+            numPlayers = players;
+            maxAttempts = players === 1 ? 5 : 3;
+            document.getElementById("gameModeSelection").classList.add("hidden");
+            document.getElementById("componentSelection").classList.remove("hidden");
+            setupDropdowns("component");
+        }
+        
+        function setupDropdowns(prefix) {
+            let components = ["CPU", "GPU", "RAM", "SSD", "Motherboard"];
+            for (let i = 1; i <= 5; i++) {
+                let dropdown = document.getElementById(prefix + i);
+                dropdown.innerHTML = "";
+                components.forEach(c => {
+                    let option = document.createElement("option");
+                    option.textContent = c;
+                    dropdown.appendChild(option);
+                });
+            }
+        }
+        
+        function confirmOrder() {
+            correctOrder = [];
+            for (let i = 1; i <= 5; i++) {
+                correctOrder.push(document.getElementById("component" + i).value);
+            }
+            document.getElementById("componentSelection").classList.add("hidden");
+            document.getElementById("guessSection").classList.remove("hidden");
+            setupDropdowns("guess");
+        }
+        
+        function submitGuess() {
+            if (numPlayers === 3 && attempts % 3 === 0) {
+                document.getElementById("roundCounter").textContent = "Round: " + (Math.floor(attempts / 3) + 1);
+            } else if (numPlayers === 1) {
+                document.getElementById("roundCounter").textContent = "Round: " + (attempts + 1);
+            }
+            
+            attempts++;
+            let guess = [];
+            let feedback = [];
+            for (let i = 1; i <= 5; i++) {
+                let value = document.getElementById("guess" + i).value;
+                guess.push(value);
+                feedback.push(value === correctOrder[i - 1] ? "✅" : "❌");
+            }
+            
+            document.getElementById("feedback").textContent = "Feedback: " + feedback.join(" ");
+            
+            if (JSON.stringify(guess) === JSON.stringify(correctOrder)) {
+                document.getElementById("result").textContent = "Player " + currentPlayer + " wins!";
+                return;
+            }
+            
+            if (attempts >= (numPlayers === 1 ? 5 : 9)) {
+                document.getElementById("result").textContent = "Game Over! The correct order was " + correctOrder.join(", ");
+            } else {
+                currentPlayer = (currentPlayer % numPlayers) + 1;
+                document.getElementById("result").textContent = "Incorrect! Player " + currentPlayer + "'s turn.";
+            }
+        }
+    </script>
+</body>
+</html>
